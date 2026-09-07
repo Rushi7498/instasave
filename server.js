@@ -141,7 +141,7 @@ app.get("/admin/api/stats", (req, res) => {
   res.json(JSON.parse(fs.readFileSync(statsFile, "utf8")));
 });
 
-app.get("*", (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
