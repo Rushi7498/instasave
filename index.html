@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INSTASave — Instagram Downloader</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:#f7f8fc;color:#171923}
+nav{height:72px;background:#fff;border-bottom:1px solid #e9e9ef;display:flex;align-items:center;justify-content:space-between;padding:0 7%}
+.logo{font-size:26px;font-weight:800}.logo span{background:linear-gradient(90deg,#833ab4,#fd1d1d,#fcb045);-webkit-background-clip:text;color:transparent}
+nav a{color:#646a78;text-decoration:none;font-size:14px;margin-left:24px}
+.hero{text-align:center;padding:75px 18px 55px}.badge{display:inline-block;padding:8px 13px;border-radius:30px;background:#fff0f5;color:#c02665;font-size:12px;font-weight:700}
+h1{font-size:50px;line-height:1.08;letter-spacing:-2.5px;margin:18px auto 13px;max-width:850px}
+.sub{color:#687080;max-width:650px;margin:0 auto 30px;line-height:1.6}
+.box{max-width:760px;margin:auto;background:white;border:1px solid #e5e6ec;border-radius:16px;padding:8px;display:flex;box-shadow:0 15px 45px #1e1e3d12}
+input{flex:1;border:0;outline:0;padding:17px;font-size:15px;min-width:0}button{border:0;border-radius:11px;background:#111827;color:#fff;padding:0 25px;font-weight:700;cursor:pointer;height:52px}
+#message{margin:15px auto;color:#697080;font-size:13px;min-height:18px}.result{display:none;max-width:760px;margin:20px auto;background:#fff;border:1px solid #e6e7ed;border-radius:16px;padding:18px;text-align:left}
+.resultrow{display:flex;gap:18px;align-items:center}.thumb{width:120px;height:120px;object-fit:cover;border-radius:12px;background:#eee}.download{background:#16a34a;height:44px}
+.features{max-width:1050px;margin:auto;padding:40px 20px 70px}.features h2{text-align:center}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:#fff;border:1px solid #e7e8ee;border-radius:16px;padding:24px}.card h3{margin:10px 0}.card p{color:#707786;line-height:1.6;font-size:14px}
+footer{text-align:center;background:#fff;border-top:1px solid #e8e8ee;padding:28px;color:#888;font-size:12px}
+@media(max-width:700px){h1{font-size:37px}.grid{grid-template-columns:1fr}.resultrow{align-items:flex-start}.thumb{width:90px;height:90px}nav a{display:none}}
+</style>
+</head>
+<body>
+<nav><div class="logo">INSTA<span>Save</span></div><div><a href="#features">Features</a><a href="#how">How it works</a></div></nav>
+<section class="hero">
+<div class="badge">⚡ FAST • SIMPLE • FREE</div>
+<h1>Download Instagram content in seconds.</h1>
+<p class="sub">Paste a public Instagram post or Reel URL. INSTASave will process the link and prepare the available media for download.</p>
+<div class="box"><input id="url" placeholder="Paste Instagram link here…" autocomplete="off"><button id="go">DOWNLOAD</button></div>
+<div id="message"></div>
+<div class="result" id="result"><div class="resultrow">
+<img class="thumb" id="thumb" alt="Preview">
+<div style="flex:1"><h3 id="title">Media detected</h3><p id="meta">Ready to download.</p><a id="download" target="_blank"><button class="download">DOWNLOAD FILE</button></a></div>
+</div></div>
+</section>
+<section class="features" id="features"><h2>INSTASave Features</h2><div class="grid">
+<div class="card"><div>🎬</div><h3>Reels & Videos</h3><p>Process supported public Instagram video links.</p></div>
+<div class="card"><div>🖼️</div><h3>Preview</h3><p>Show available media information before downloading.</p></div>
+<div class="card"><div>📱</div><h3>Responsive</h3><p>Works on mobile, tablet and desktop screens.</p></div>
+</div></section>
+<footer>© 2026 INSTASave • Public content only<br><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/contact.html">Contact</a></footer>
+<script>
+const input=document.getElementById("url"), go=document.getElementById("go"), msg=document.getElementById("message");
+const result=document.getElementById("result"), thumb=document.getElementById("thumb"), title=document.getElementById("title"), meta=document.getElementById("meta"), dl=document.getElementById("download");
+function setMsg(t){msg.textContent=t}
+go.onclick=async()=>{
+ const url=input.value.trim(); result.style.display="none";
+ if(!url){setMsg("Please paste an Instagram URL.");return}
+ go.disabled=true;go.textContent="PROCESSING…";setMsg("Checking the public media…");
+ try{
+  const r=await fetch("/api/info",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url})});
+  const d=await r.json();
+  if(!r.ok) throw new Error(d.error||"Could not process this URL.");
+  title.textContent=d.title||"Instagram media";
+  meta.textContent=d.duration?`Duration: ${Math.round(d.duration)} seconds`:"Media is ready.";
+  if(d.thumbnail){thumb.src=d.thumbnail;thumb.style.display="block"}else{thumb.style.display="none"}
+  dl.href="/api/download?url="+encodeURIComponent(url);
+  result.style.display="block";setMsg("Ready.");
+ }catch(e){setMsg(e.message)}
+ finally{go.disabled=false;go.textContent="DOWNLOAD"}
+};
+</script>
+</body></html>
